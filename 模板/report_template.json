@@ -1,0 +1,43 @@
+{
+    "report_id": "",
+    "generation_date": "",
+    "analysis_period": {
+        "start_date": "",
+        "end_date": ""
+    },
+    "market_analysis": {
+        "price_trends": [],
+        "demand_forecast": [],
+        "market_recommendations": []
+    },
+    "disaster_warning": {
+        "current_risks": [],
+        "prevention_suggestions": [],
+        "emergency_measures": []
+    },
+    "resource_planning": {
+        "land_allocation": [],
+        "crop_rotation_plan": [],
+        "resource_optimization": []
+    },
+    "supply_chain": {
+        "logistics_efficiency": [],
+        "inventory_status": [],
+        "distribution_suggestions": []
+    },
+    "policy_analysis": {
+        "policy_impacts": [],
+        "subsidy_effectiveness": [],
+        "improvement_suggestions": []
+    },
+    "consumer_insights": {
+        "market_segments": [],
+        "consumption_trends": [],
+        "marketing_suggestions": []
+    },
+    "summary": {
+        "key_findings": [],
+        "priority_actions": [],
+        "future_outlook": []
+    }
+} 
