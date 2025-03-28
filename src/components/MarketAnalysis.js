@@ -13,7 +13,7 @@ function MarketAnalysis() {
   const [error, setError] = useState(null);
   const [timeRange, setTimeRange] = useState('day');
   const [showDetails, setShowDetails] = useState(false);
-  const [chartType, setChartType] = useState('kline'); // 'kline' or 'line'
+  const [chartType, setChartType] = useState('line'); // 修改默认值为 'line'
 
   useEffect(() => {
     const updateData = async () => {
@@ -145,8 +145,8 @@ function MarketAnalysis() {
               onChange={(e) => setChartType(e.target.value)}
               className="px-3 py-2 border border-gray-300 rounded-md text-sm w-full md:w-auto"
             >
-              <option value="kline">K线图</option>
               <option value="line">分时图</option>
+              <option value="kline">K线图</option>
             </select>
             <button
               onClick={() => setShowDetails(!showDetails)}
@@ -179,7 +179,31 @@ function MarketAnalysis() {
         {/* 价格走势图 */}
         <div className="h-64 md:h-96">
           <ResponsiveContainer width="100%" height="100%">
-            {chartType === 'kline' ? (
+            {chartType === 'line' ? (
+              <LineChart data={marketData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis
+                  dataKey="时间戳"
+                  tickFormatter={(timestamp) => {
+                    const date = new Date(timestamp);
+                    return timeRange === 'day' ?
+                      date.getHours() + ':' + date.getMinutes().toString().padStart(2, '0') :
+                      (date.getMonth() + 1) + '/' + date.getDate();
+                  }}
+                />
+                <YAxis domain={['dataMin', 'dataMax']} />
+                <Tooltip />
+                <Legend />
+                <Line
+                  type="monotone"
+                  dataKey={`${selectedProduct}_收盘`}
+                  name="价格"
+                  stroke="#4F46E5"
+                  dot={false}
+                  activeDot={{ r: 4 }}
+                />
+              </LineChart>
+            ) : (
               <ComposedChart data={marketData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis
@@ -265,28 +289,6 @@ function MarketAnalysis() {
                   connectNulls={true}
                 />
               </ComposedChart>
-            ) : (
-              <LineChart data={marketData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis
-                  dataKey="时间戳"
-                  tickFormatter={(timestamp) => {
-                    const date = new Date(timestamp);
-                    return timeRange === 'day' ?
-                      date.getHours() + ':' + date.getMinutes().toString().padStart(2, '0') :
-                      (date.getMonth() + 1) + '/' + date.getDate();
-                  }}
-                />
-                <YAxis domain={['dataMin', 'dataMax']} />
-                <Tooltip />
-                <Legend />
-                <Line
-                  type="monotone"
-                  dataKey={`${selectedProduct}_收盘`}
-                  stroke="#8884d8"
-                  name="价格"
-                />
-              </LineChart>
             )}
           </ResponsiveContainer>
         </div>
