@@ -24,3 +24,8 @@ yarn-error.log*
 # IDE
 .idea/
 .vscode/
+
+# Security
+*.pem
+*.key
+*.cert
