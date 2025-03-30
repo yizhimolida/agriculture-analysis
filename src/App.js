@@ -14,9 +14,9 @@ function App() {
               <h1 className="text-4xl md:text-5xl font-bold text-center tracking-wider"
                   style={{
                     fontFamily: '"楷体", "STKaiti", serif',
-                    color: '#3a7f3b',
+                    color: '#000000',
                     textShadow: '2px 2px 4px rgba(0, 0, 0, 0.1)',
-                    background: 'linear-gradient(45deg, #4a934a, #68bb59)',
+                    background: 'linear-gradient(45deg,rgb(15, 16, 15),rgb(15, 16, 15))',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
                     letterSpacing: '0.1em'
