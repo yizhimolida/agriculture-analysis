@@ -21,7 +21,7 @@ function App() {
                     WebkitTextFillColor: 'transparent',
                     letterSpacing: '0.1em'
                   }}>
-                稻 香 平 台
+                稻 香 农 业 分 析 平 台
               </h1>
             </div>
           </div>
