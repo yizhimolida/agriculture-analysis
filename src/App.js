@@ -9,9 +9,20 @@ function App() {
     <div className="min-h-screen bg-gray-100">
       <nav className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
+          <div className="flex justify-center h-20">
             <div className="flex items-center">
-              <h1 className="text-xl font-bold text-gray-900">稻香</h1>
+              <h1 className="text-4xl md:text-5xl font-bold text-center tracking-wider"
+                  style={{
+                    fontFamily: '"楷体", "STKaiti", serif',
+                    color: '#3a7f3b',
+                    textShadow: '2px 2px 4px rgba(0, 0, 0, 0.1)',
+                    background: 'linear-gradient(45deg, #4a934a, #68bb59)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    letterSpacing: '0.1em'
+                  }}>
+                稻 香
+              </h1>
             </div>
           </div>
         </div>
