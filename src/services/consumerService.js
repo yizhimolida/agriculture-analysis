@@ -13,7 +13,8 @@ const consumerDataTypes = [
   { id: 'channels', name: '购买渠道' },
   { id: 'trends', name: '消费趋势' },
   { id: 'organic', name: '有机食品' },
-  { id: 'regions', name: '区域差异' }
+  { id: 'regions', name: '区域差异' },
+  { id: 'supplyDemand', name: '产销对接' }
 ];
 
 // 获取消费者洞察数据
@@ -562,6 +563,138 @@ function generateConsumerData(category) {
         }
       ];
       
+    case 'supplyDemand':
+      return [
+        {
+          id: 1,
+          factor: '价格波动风险',
+          impactLevel: 85,
+          trend: '需重点关注',
+          description: '蔬菜价格波动造成"菜贵伤民、菜贱伤农"问题，影响消费者购买力和农民收益',
+          solution: '建立价格预警机制，通过大数据分析预测市场波动，提前发布预警信息',
+          stakeholders: ['农民', '批发商', '零售商', '消费者', '政府部门'],
+          impact: 'high',
+          yearChange: '+5.2%',
+          implementation: {
+            difficulty: '中等',
+            timeframe: '短期',
+            costEfficiency: '高'
+          }
+        },
+        {
+          id: 2,
+          factor: '供需信息不对称',
+          impactLevel: 82,
+          trend: '亟待解决',
+          description: '农产品供需双方信息不对称，导致资源错配和市场波动',
+          solution: '构建产区与销区信息共享平台，实时公开产销数据，减少信息壁垒',
+          stakeholders: ['农民', '合作社', '批发市场', '零售商', '消费者'],
+          impact: 'high',
+          yearChange: '+3.8%',
+          implementation: {
+            difficulty: '中等',
+            timeframe: '中期',
+            costEfficiency: '高'
+          }
+        },
+        {
+          id: 3,
+          factor: '农产品产销对接',
+          impactLevel: 90,
+          trend: '积极推进',
+          description: '直接对接生产者和消费者，减少中间环节，稳定农产品价格',
+          solution: '推广"农超对接"、"农社对接"和"农企对接"等模式，建立稳定的产销关系',
+          stakeholders: ['农民合作社', '超市', '社区团购', '农产品加工企业'],
+          impact: 'high',
+          yearChange: '+7.5%',
+          implementation: {
+            difficulty: '低',
+            timeframe: '短期',
+            costEfficiency: '高'
+          }
+        },
+        {
+          id: 4,
+          factor: '季节性供需错配',
+          impactLevel: 75,
+          trend: '需系统规划',
+          description: '农产品季节性强，生产和消费需求存在时间差，造成价格波动',
+          solution: '加强产销衔接的季节性规划，引导错峰生产，优化冷链物流基础设施',
+          stakeholders: ['种植户', '合作社', '冷链企业', '批发市场'],
+          impact: 'medium',
+          yearChange: '+4.2%',
+          implementation: {
+            difficulty: '高',
+            timeframe: '中长期',
+            costEfficiency: '中'
+          }
+        },
+        {
+          id: 5,
+          factor: '价格保障机制',
+          impactLevel: 78,
+          trend: '逐步完善',
+          description: '建立主要农产品价格保障机制，减轻价格异常波动风险',
+          solution: '完善农产品目标价格保险，扩大"保险+期货"试点，健全利益联结机制',
+          stakeholders: ['政府部门', '保险公司', '期货公司', '农民合作社'],
+          impact: 'medium',
+          yearChange: '+6.1%',
+          implementation: {
+            difficulty: '中等',
+            timeframe: '中期',
+            costEfficiency: '中'
+          }
+        },
+        {
+          id: 6,
+          factor: '产地冷链仓储',
+          impactLevel: 80,
+          trend: '重点投入',
+          description: '产地缺乏冷链设施，导致农产品无法有效储存，被迫低价销售',
+          solution: '加强产地预冷、冷藏等设施建设，延长农产品保鲜期，避免集中上市',
+          stakeholders: ['农民合作社', '物流企业', '供应链服务商'],
+          impact: 'high',
+          yearChange: '+8.3%',
+          implementation: {
+            difficulty: '中等',
+            timeframe: '中期',
+            costEfficiency: '中'
+          }
+        },
+        {
+          id: 7,
+          factor: '消费者预期管理',
+          impactLevel: 65,
+          trend: '逐步重视',
+          description: '消费者对农产品价格预期不稳定，影响市场平稳运行',
+          solution: '加强市场信息透明度，定期发布价格趋势分析，引导理性消费',
+          stakeholders: ['媒体', '行业协会', '农业部门', '消费者'],
+          impact: 'medium',
+          yearChange: '+5.0%',
+          implementation: {
+            difficulty: '低',
+            timeframe: '短期',
+            costEfficiency: '高'
+          }
+        },
+        {
+          id: 8,
+          factor: '区域产销协调',
+          impactLevel: 70,
+          trend: '区域联动',
+          description: '不同区域农产品产销信息不畅，导致区域间供需失衡',
+          solution: '建立跨区域产销协调机制，优化农产品区域布局，促进区域间互补',
+          stakeholders: ['地方政府', '农业部门', '物流企业', '批发市场'],
+          impact: 'medium',
+          yearChange: '+4.5%',
+          implementation: {
+            difficulty: '高',
+            timeframe: '长期',
+            costEfficiency: '中'
+          }
+        }
+      ];
+      
     default:
       return [];
   }
@@ -569,20 +702,26 @@ function generateConsumerData(category) {
 
 // 生成综合分析
 function generateOverallAnalysis() {
-  // 基于国家统计局和农业农村部发布的消费数据
   const analyses = [
-    "中国农产品消费正经历从量的满足向质的提升转变，消费者对食品安全、品质和健康的关注显著提高。",
-    "城乡消费差异虽然依然存在，但正逐渐缩小，农村消费者对品质和品牌的重视程度不断提升。",
-    "电商和新零售渠道快速发展，改变了传统农产品流通格局，特别是在疫情后的消费环境中。",
-    "消费者对农产品的认知日益多元化，既关注价格和品质，也重视生产方式、环境影响和社会价值。",
-    "健康、便利、个性化是未来农产品消费的主要趋势，有机、功能性和定制化农产品市场潜力巨大。",
-    "农产品品牌化趋势明显，头部品牌的市场份额持续提高，消费者品牌忠诚度逐渐形成。",
-    "线上线下融合的全渠道消费成为主流，消费者在不同场景下有不同的购买偏好。"
+    '消费者对农产品质量安全的关注度持续提高，食品安全已成为首要考虑因素',
+    '传统菜市场正在转型升级，但仍是大多数消费者购买生鲜农产品的主要渠道',
+    '生鲜电商渗透率在城市地区稳步提高，但最后一公里配送仍是挑战',
+    '有机和绿色农产品需求增长明显，尤其在高收入人群中',
+    '建立产销对接机制是解决"菜贵伤民、菜贱伤农"问题的关键路径，消费者支持度高',
+    '透明的价格形成机制和市场信息共享有助于稳定消费者购买预期和种植积极性',
+    '消费者支持直接从农户购买的短链供应模式，愿意为新鲜和可追溯产品支付溢价',
+    '区域性农产品价差大，加强区域联动和物流体系建设是平抑价格的重要手段'
   ];
   
-  // 随机选择3条分析形成综合报告
-  const shuffled = [...analyses].sort(() => 0.5 - Math.random());
-  return shuffled.slice(0, 3).join(" ");
+  // 随机选择3-5个分析点
+  const count = Math.floor(Math.random() * 3) + 3; // 3-5个
+  const selectedIndices = new Set();
+  
+  while (selectedIndices.size < count) {
+    selectedIndices.add(Math.floor(Math.random() * analyses.length));
+  }
+  
+  return Array.from(selectedIndices).map(idx => analyses[idx]);
 }
 
 // 获取消费者画像
