@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { getMarketPriceData, getPriceTrendAnalysis, productCategories } from '../services/marketService';
+import { getMarketPriceData, getPriceTrendAnalysis, productCategories, provinces } from '../services/marketService';
 
 function MarketAnalysis() {
   const [selectedCategory, setSelectedCategory] = useState('vegetables');
+  const [selectedProvince, setSelectedProvince] = useState('all');
   const [priceData, setPriceData] = useState([]);
   const [trendAnalysis, setTrendAnalysis] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -16,8 +17,8 @@ function MarketAnalysis() {
       
       try {
         const [priceResponse, analysisResponse] = await Promise.all([
-          getMarketPriceData(selectedCategory),
-          getPriceTrendAnalysis(selectedCategory)
+          getMarketPriceData(selectedCategory, selectedProvince),
+          getPriceTrendAnalysis(selectedCategory, selectedProvince)
         ]);
         
         setPriceData(priceResponse);
@@ -31,11 +32,16 @@ function MarketAnalysis() {
     }
     
     fetchData();
-  }, [selectedCategory]);
+  }, [selectedCategory, selectedProvince]);
 
   // 处理类别变化
   const handleCategoryChange = (e) => {
     setSelectedCategory(e.target.value);
+  };
+  
+  // 处理省份变化
+  const handleProvinceChange = (e) => {
+    setSelectedProvince(e.target.value);
   };
 
   // 刷新数据
@@ -43,8 +49,8 @@ function MarketAnalysis() {
     setLoading(true);
     
     Promise.all([
-      getMarketPriceData(selectedCategory, true),
-      getPriceTrendAnalysis(selectedCategory, true)
+      getMarketPriceData(selectedCategory, selectedProvince, true),
+      getPriceTrendAnalysis(selectedCategory, selectedProvince, true)
     ])
       .then(([priceResponse, analysisResponse]) => {
         setPriceData(priceResponse);
@@ -109,9 +115,9 @@ function MarketAnalysis() {
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-800">市场价格趋势</h2>
-        <div className="flex space-x-4">
+      <div className="flex flex-col md:flex-row justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold text-gray-800 mb-4 md:mb-0">市场价格趋势</h2>
+        <div className="flex flex-wrap gap-4">
           <select
             value={selectedCategory}
             onChange={handleCategoryChange}
@@ -120,6 +126,18 @@ function MarketAnalysis() {
             {productCategories.map(category => (
               <option key={category.id} value={category.id}>
                 {category.name}
+              </option>
+            ))}
+          </select>
+          
+          <select
+            value={selectedProvince}
+            onChange={handleProvinceChange}
+            className="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            {provinces.map(province => (
+              <option key={province.id} value={province.id}>
+                {province.name}
               </option>
             ))}
           </select>
@@ -148,7 +166,9 @@ function MarketAnalysis() {
           <div className="lg:col-span-1">
             {trendAnalysis && (
               <div className="bg-gray-50 rounded-lg p-4">
-                <h3 className="text-lg font-semibold mb-3 text-gray-800">市场分析</h3>
+                <h3 className="text-lg font-semibold mb-2 text-gray-800">
+                  {trendAnalysis.province}市场分析
+                </h3>
                 
                 <div className="mb-4">
                   <div className="flex justify-between items-center mb-2">
@@ -254,82 +274,93 @@ function MarketAnalysis() {
                 </div>
                 
                 <div className="mt-4 text-xs text-gray-400 text-right">
-                  更新时间: {new Date(trendAnalysis.updatedAt).toLocaleString()}
+                  数据更新时间: {new Date(trendAnalysis.updatedAt).toLocaleString()}
                 </div>
               </div>
             )}
           </div>
           
-          {/* 价格表格 */}
+          {/* 价格数据表格 */}
           <div className="lg:col-span-2">
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      产品
-                    </th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      当前价格
-                    </th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      环比
-                    </th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      同比
-                    </th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      趋势
-                    </th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      价格走势
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {priceData.map((product, index) => (
-                    <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">{product.name}</div>
-                        <div className="text-xs text-gray-500">{product.sources[0]?.market || '全国均价'}</div>
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-right">
-                        <div className="text-sm font-medium text-gray-900">{product.currentPrice}{product.unit.replace('元/', '')}</div>
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-right">
-                        <div className={`text-sm font-medium ${getChangeColor(product.monthOverMonthChange)}`}>
-                          {product.monthOverMonthChange}%
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-right">
-                        <div className={`text-sm font-medium ${getChangeColor(product.yearOverYearChange)}`}>
-                          {product.yearOverYearChange}%
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-right">
-                        <span className={`inline-flex px-2 text-xs font-semibold rounded-full ${
-                          product.trend === '上涨' ? 'bg-red-100 text-red-800' : 
-                          product.trend === '下跌' ? 'bg-green-100 text-green-800' : 
-                          'bg-gray-100 text-gray-800'
-                        }`}>
-                          {product.trend}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3">
-                        {renderPriceChart(product)}
-                      </td>
+            <div className="bg-white overflow-hidden rounded-lg border border-gray-200">
+              <div className="px-4 py-3 border-b border-gray-200 bg-gray-50">
+                <h3 className="text-lg font-medium text-gray-700">
+                  {trendAnalysis?.province || '全国'}{productCategories.find(c => c.id === selectedCategory)?.name || ''}价格表
+                </h3>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        产品
+                      </th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        当前价格
+                      </th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        环比变化
+                      </th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        同比变化
+                      </th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        趋势
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {priceData.map((product, index) => (
+                      <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="font-medium text-gray-900">{product.name}</div>
+                          <div className="text-xs text-gray-500">{product.unit}</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="font-medium text-gray-900">{product.currentPrice}</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className={`${getChangeColor(product.monthOverMonthChange)}`}>
+                            {product.monthOverMonthChange}%
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className={`${getChangeColor(product.yearOverYearChange)}`}>
+                            {product.yearOverYearChange}%
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center">
+                            <span className={`mr-2 ${getTrendColor(product.trend)}`}>
+                              {product.trend}
+                            </span>
+                            {renderPriceChart(product)}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              
+              {priceData.length > 0 && priceData[0].sources && (
+                <div className="px-4 py-3 bg-gray-50 border-t border-gray-200">
+                  <h4 className="text-sm font-medium text-gray-700 mb-2">批发市场参考价</h4>
+                  <div className="flex flex-wrap gap-4">
+                    {priceData[0].sources.map((source, index) => (
+                      <div key={index} className="text-sm">
+                        <span className="text-gray-600">{source.market}:</span>
+                        <span className="ml-1 font-medium">{source.price}{priceData[0].unit}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
             
-            {/* 数据来源说明 */}
             <div className="mt-4 text-xs text-gray-500">
-              <p>数据来源: 农业农村部市场信息系统、全国农产品批发市场价格信息系统</p>
-              <p>
-                价格为目标市场平均批发价，仅供参考，实际交易价格可能因地区、品质等因素有所差异
-              </p>
+              <p>价格数据来源: 农业农村部市场信息系统、各批发市场统计数据</p>
+              <p>价格仅供参考，实际交易价格可能存在差异</p>
             </div>
           </div>
         </div>

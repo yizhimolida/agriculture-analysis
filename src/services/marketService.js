@@ -5,6 +5,25 @@ import axios from 'axios';
 const MARKET_DATA_CACHE_DURATION = 12 * 60 * 60 * 1000; // 12小时缓存
 const marketDataCache = new Map();
 
+// 省份列表 - 添加支持省份筛选
+const provinces = [
+  { id: 'all', name: '全国' },
+  { id: 'beijing', name: '北京' },
+  { id: 'shanghai', name: '上海' },
+  { id: 'guangdong', name: '广东' },
+  { id: 'jiangsu', name: '江苏' },
+  { id: 'zhejiang', name: '浙江' },
+  { id: 'shandong', name: '山东' },
+  { id: 'sichuan', name: '四川' },
+  { id: 'hubei', name: '湖北' },
+  { id: 'henan', name: '河南' },
+  { id: 'fujian', name: '福建' },
+  { id: 'hunan', name: '湖南' },
+  { id: 'hebei', name: '河北' },
+  { id: 'anhui', name: '安徽' },
+  { id: 'liaoning', name: '辽宁' }
+];
+
 // 主要农产品类别
 const productCategories = [
   { id: 'grains', name: '粮食' },
@@ -15,15 +34,15 @@ const productCategories = [
   { id: 'aquatic', name: '水产品' }
 ];
 
-// 获取市场价格数据
-async function getMarketPriceData(category = 'vegetables') {
+// 获取市场价格数据 - 修改支持省份参数
+async function getMarketPriceData(category = 'vegetables', province = 'all', forceRefresh = false) {
   try {
-    // 检查缓存
-    const cacheKey = `market-prices-${category}`;
-    if (marketDataCache.has(cacheKey)) {
+    // 检查缓存 - 修改缓存键包含省份
+    const cacheKey = `market-prices-${category}-${province}`;
+    if (!forceRefresh && marketDataCache.has(cacheKey)) {
       const cachedData = marketDataCache.get(cacheKey);
       if (Date.now() - cachedData.timestamp < MARKET_DATA_CACHE_DURATION) {
-        console.log(`Using cached market data for ${category}`);
+        console.log(`Using cached market data for ${category} in ${province}`);
         return cachedData.data;
       }
     }
@@ -31,19 +50,19 @@ async function getMarketPriceData(category = 'vegetables') {
     // 以蔬菜为例，从正规开放的农产品价格API获取数据
     // 这里使用的是第三方API，在实际项目中可能需要替换为实际可用的API
     // 例如中国农业信息网、农业农村部网站等提供的数据
-    console.log(`Fetching fresh market data for ${category}`);
+    console.log(`Fetching fresh market data for ${category} in ${province}`);
     
     // 注：在实际项目中，这里需要替换为实际可用的API端点
     // 由于直接API可能受限，我们可以使用公开的农产品批发价格信息
     // 以下是模拟API请求，实际环境中应替换为真实API
-    // const response = await axios.get(`https://api.example.com/agricultural-prices/${category}`);
+    // const response = await axios.get(`https://api.example.com/agricultural-prices/${category}?province=${province}`);
     
     // 模拟API请求延迟
     await new Promise(resolve => setTimeout(resolve, 500));
     
     // 由于直接API访问可能有限制，我们这里生成一些基于真实数据的模拟数据
     // 在实际项目中，这部分应替换为真实API调用
-    const simulatedData = generateMarketData(category);
+    const simulatedData = generateMarketData(category, province);
     
     // 缓存数据
     marketDataCache.set(cacheKey, {
@@ -55,12 +74,34 @@ async function getMarketPriceData(category = 'vegetables') {
   } catch (error) {
     console.error('获取市场价格数据失败:', error);
     // 如果API请求失败，返回模拟数据
-    return generateMarketData(category);
+    return generateMarketData(category, province);
   }
 }
 
-// 生成基于真实价格范围的农产品价格数据
-function generateMarketData(category) {
+// 生成基于真实价格范围的农产品价格数据 - 修改支持省份差异
+function generateMarketData(category, province = 'all') {
+  // 省份系数 - 模拟不同省份的价格差异
+  const provinceFactors = {
+    'all': 1.0,      // 全国平均
+    'beijing': 1.15, // 北京价格略高
+    'shanghai': 1.18, // 上海价格较高
+    'guangdong': 1.08, // 广东价格适中偏高
+    'jiangsu': 1.05,  // 江苏价格适中
+    'zhejiang': 1.10,  // 浙江价格较高
+    'shandong': 0.95, // 山东价格略低(农产品主产区)
+    'sichuan': 0.90,  // 四川价格较低
+    'hubei': 0.92,   // 湖北价格较低
+    'henan': 0.88,   // 河南价格低(农产品主产区)
+    'fujian': 1.05,  // 福建价格适中
+    'hunan': 0.93,   // 湖南价格较低
+    'hebei': 0.97,   // 河北价格略低
+    'anhui': 0.90,   // 安徽价格较低
+    'liaoning': 1.02 // 辽宁价格适中
+  };
+  
+  // 获取省份价格系数
+  const provinceFactor = provinceFactors[province] || 1.0;
+  
   // 基于真实市场价格范围的模拟数据
   const productsMap = {
     'vegetables': [
@@ -135,10 +176,13 @@ function generateMarketData(category) {
 
   const products = productsMap[category] || productsMap['vegetables'];
   
-  // 为每个产品生成当前价格、历史价格和预测价格
+  // 为每个产品生成当前价格、历史价格和预测价格，应用省份价格系数
   return products.map(product => {
     const [min, max] = product.priceRange;
-    const currentPrice = (min + Math.random() * (max - min)).toFixed(2);
+    // 应用省份价格系数
+    const adjustedMin = min * provinceFactor;
+    const adjustedMax = max * provinceFactor;
+    const currentPrice = (adjustedMin + Math.random() * (adjustedMax - adjustedMin)).toFixed(2);
     
     // 根据趋势生成合理的历史数据和预测数据
     const trendFactor = product.trend === '上涨' ? 0.95 : (product.trend === '下跌' ? 1.05 : 1);
@@ -155,23 +199,45 @@ function generateMarketData(category) {
     // 生成历史价格趋势（最近7天）
     const priceTrend = generatePriceTrend(currentPrice, product.trend);
     
-    // 生成市场来源
-    const markets = ['北京新发地', '上海江桥', '广州江南', '成都农产品', '武汉白沙洲', '沈阳八家子'];
+    // 生成市场来源，包括特定省份的批发市场
+    const marketsByProvince = {
+      'beijing': ['北京新发地', '北京大洋路', '北京昌平水屯'],
+      'shanghai': ['上海江桥', '上海江杨', '上海浦东'],
+      'guangdong': ['广州江南', '深圳布吉', '佛山桂城'],
+      'jiangsu': ['南京江北', '苏州南环桥', '无锡朝阳'],
+      'zhejiang': ['杭州良渚', '宁波江北', '温州瓯海'],
+      'shandong': ['济南堤口', '青岛抚顺', '烟台芝罘'],
+      'sichuan': ['成都农产品', '绵阳涪城', '德阳旌阳'],
+      'hubei': ['武汉白沙洲', '宜昌伍家岗', '襄阳襄城'],
+      'henan': ['郑州万邦', '洛阳涧西', '南阳卧龙'],
+      'fujian': ['福州马尾', '厦门湖里', '泉州丰泽'],
+      'hunan': ['长沙马王堆', '株洲荷塘', '湘潭雨湖'],
+      'hebei': ['石家庄桥西', '唐山路南', '保定竞秀'],
+      'anhui': ['合肥裕溪', '芜湖镜湖', '蚌埠蚌山'],
+      'liaoning': ['沈阳沈北', '大连沙河口', '鞍山铁东']
+    };
+    
+    // 获取特定省份的市场，如果不存在使用默认市场
+    const provinceMarkets = marketsByProvince[province] || 
+      ['北京新发地', '上海江桥', '广州江南', '成都农产品', '武汉白沙洲', '沈阳八家子'];
+    
+    // 为全国数据混合使用各省市场
+    const marketsToUse = province === 'all' ? 
+      ['北京新发地', '上海江桥', '广州江南', '成都农产品', '武汉白沙洲', '沈阳八家子'] : 
+      provinceMarkets;
+    
     const sources = [];
-    for (let i = 0; i < 3; i++) {
-      const marketIndex = Math.floor(Math.random() * markets.length);
+    for (let i = 0; i < Math.min(3, marketsToUse.length); i++) {
       const marketPrice = (parseFloat(currentPrice) * (0.9 + Math.random() * 0.2)).toFixed(2);
       sources.push({
-        market: markets[marketIndex],
+        market: marketsToUse[i],
         price: marketPrice
       });
-      // 避免重复
-      markets.splice(marketIndex, 1);
-      if (markets.length === 0) break;
     }
     
     return {
       ...product,
+      province: provinces.find(p => p.id === province)?.name || '全国',
       currentPrice,
       lastMonthPrice,
       lastYearPrice,
@@ -234,127 +300,199 @@ function generatePriceTrend(currentPrice, trend) {
   return result;
 }
 
-// 获取农产品价格趋势分析
-async function getPriceTrendAnalysis(category = 'vegetables') {
+// 为省份特定价格趋势分析
+async function getPriceTrendAnalysis(category = 'vegetables', province = 'all', forceRefresh = false) {
   try {
-    // 获取最新价格数据
-    const priceData = await getMarketPriceData(category);
+    // 使用包含省份的缓存键
+    const cacheKey = `price-trends-${category}-${province}`;
+    if (!forceRefresh && marketDataCache.has(cacheKey)) {
+      const cachedData = marketDataCache.get(cacheKey);
+      if (Date.now() - cachedData.timestamp < MARKET_DATA_CACHE_DURATION) {
+        return cachedData.data;
+      }
+    }
     
-    // 计算综合趋势
-    const trends = priceData.map(p => p.trend);
-    const upCount = trends.filter(t => t === '上涨').length;
-    const stableCount = trends.filter(t => t === '平稳').length;
-    const downCount = trends.filter(t => t === '下跌').length;
+    // 获取产品价格数据
+    const priceData = await getMarketPriceData(category, province, forceRefresh);
+    
+    // 分析价格趋势
+    const upCount = priceData.filter(p => p.trend === '上涨').length;
+    const downCount = priceData.filter(p => p.trend === '下跌').length;
+    const stableCount = priceData.filter(p => p.trend === '平稳').length;
+    
+    // 确定主要趋势
+    let mainTrend = '平稳';
+    if (upCount > downCount && upCount > stableCount) mainTrend = '上涨';
+    if (downCount > upCount && downCount > stableCount) mainTrend = '下跌';
     
     // 计算平均价格变化
-    const avgMonthChange = priceData.reduce((sum, p) => sum + parseFloat(p.monthOverMonthChange), 0) / priceData.length;
-    const avgYearChange = priceData.reduce((sum, p) => sum + parseFloat(p.yearOverYearChange), 0) / priceData.length;
+    const avgMonthChange = (priceData.reduce((sum, p) => sum + parseFloat(p.monthOverMonthChange), 0) / priceData.length).toFixed(1);
+    const avgYearChange = (priceData.reduce((sum, p) => sum + parseFloat(p.yearOverYearChange), 0) / priceData.length).toFixed(1);
     
-    // 找出涨幅最大和降幅最大的产品
-    let maxIncreaseProduct = null;
-    let maxDecreaseProduct = null;
-    let maxIncrease = -Infinity;
-    let maxDecrease = Infinity;
+    // 获取价格变化最大的产品
+    priceData.sort((a, b) => parseFloat(b.monthOverMonthChange) - parseFloat(a.monthOverMonthChange));
+    const maxIncrease = priceData[0];
+    const maxDecrease = priceData[priceData.length - 1];
     
-    priceData.forEach(product => {
-      const change = parseFloat(product.monthOverMonthChange);
-      if (change > maxIncrease) {
-        maxIncrease = change;
-        maxIncreaseProduct = product;
-      }
-      if (change < maxDecrease) {
-        maxDecrease = change;
-        maxDecreaseProduct = product;
-      }
-    });
+    // 添加省份特定的季节性分析
+    const seasonalAnalysis = getSeasonalFactors(category, province);
     
-    // 获取季节性分析（基于月份）
-    const month = new Date().getMonth() + 1;
-    const seasonalFactors = getSeasonalFactors(category, month);
-    
-    return {
-      category,
+    const analysis = {
+      province: provinces.find(p => p.id === province)?.name || '全国',
       totalProducts: priceData.length,
       trendSummary: {
+        mainTrend,
         upCount,
-        stableCount,
         downCount,
-        mainTrend: upCount > downCount ? (upCount > stableCount ? '上涨' : '平稳') : (downCount > stableCount ? '下跌' : '平稳')
+        stableCount
       },
       priceChanges: {
-        avgMonthChange: avgMonthChange.toFixed(1) + '%',
-        avgYearChange: avgYearChange.toFixed(1) + '%'
+        avgMonthChange: `${avgMonthChange}%`,
+        avgYearChange: `${avgYearChange}%`
       },
       highlights: {
-        maxIncrease: maxIncreaseProduct ? {
-          name: maxIncreaseProduct.name,
-          change: maxIncreaseProduct.monthOverMonthChange + '%',
-          currentPrice: maxIncreaseProduct.currentPrice + maxIncreaseProduct.unit
-        } : null,
-        maxDecrease: maxDecreaseProduct ? {
-          name: maxDecreaseProduct.name,
-          change: maxDecreaseProduct.monthOverMonthChange + '%',
-          currentPrice: maxDecreaseProduct.currentPrice + maxDecreaseProduct.unit
-        } : null
+        maxIncrease: {
+          name: maxIncrease.name,
+          change: `${maxIncrease.monthOverMonthChange}%`,
+          currentPrice: `${maxIncrease.currentPrice}${maxIncrease.unit}`
+        },
+        maxDecrease: {
+          name: maxDecrease.name,
+          change: `${maxDecrease.monthOverMonthChange}%`,
+          currentPrice: `${maxDecrease.currentPrice}${maxDecrease.unit}`
+        }
       },
-      seasonalAnalysis: seasonalFactors,
+      seasonalAnalysis,
       updatedAt: new Date().toISOString()
     };
+    
+    // 缓存分析结果
+    marketDataCache.set(cacheKey, {
+      data: analysis,
+      timestamp: Date.now()
+    });
+    
+    return analysis;
+    
   } catch (error) {
     console.error('获取价格趋势分析失败:', error);
     return {
-      category,
-      error: '分析数据获取失败'
+      province: provinces.find(p => p.id === province)?.name || '全国',
+      totalProducts: 0,
+      trendSummary: {
+        mainTrend: '平稳',
+        upCount: 0,
+        downCount: 0,
+        stableCount: 0
+      },
+      priceChanges: {
+        avgMonthChange: '0.0%',
+        avgYearChange: '0.0%'
+      },
+      highlights: {},
+      seasonalAnalysis: getSeasonalFactors(category, province),
+      updatedAt: new Date().toISOString()
     };
   }
 }
 
-// 获取季节性因素分析
-function getSeasonalFactors(category, month) {
-  // 基于真实的季节性供需关系
-  const seasonalData = {
-    'vegetables': {
-      spring: ['菠菜', '芹菜', '春笋', '蒜苗'],
-      summer: ['黄瓜', '茄子', '西红柿', '辣椒'],
-      autumn: ['白菜', '萝卜', '南瓜', '豆角'],
-      winter: ['大白菜', '白萝卜', '土豆', '卷心菜']
+// 获取季节性因素分析 - 添加省份差异
+function getSeasonalFactors(category, province = 'all') {
+  const now = new Date();
+  const month = now.getMonth() + 1; // 1-12
+  
+  // 根据月份确定季节
+  let season = '春季';
+  if (month >= 6 && month <= 8) season = '夏季';
+  if (month >= 9 && month <= 11) season = '秋季';
+  if (month === 12 || month <= 2) season = '冬季';
+  
+  // 不同省份的季节性分析
+  const provincialAnalysis = {
+    'beijing': {
+      'vegetables': {
+        '春季': '北方春季蔬菜供应逐渐增加，价格趋于稳定，但早春仍有价格波动',
+        '夏季': '夏季高温，蔬菜生长迅速，北京地区供应充足，价格普遍较低',
+        '秋季': '秋季是蔬菜丰收季，北京地区菜价处于全年低位',
+        '冬季': '冬季北方蔬菜大棚种植成本增加，价格上涨明显'
+      },
+      'fruits': {
+        '春季': '春季水果种类相对较少，以苹果、梨等耐储存水果为主，价格适中',
+        '夏季': '夏季北京地区水果种类增多，价格开始下降',
+        '秋季': '秋季水果品种丰富，北京地区水果价格处于较低水平',
+        '冬季': '冬季水果供应减少，以进口和储存水果为主，价格有所上升'
+      }
     },
-    'fruits': {
-      spring: ['草莓', '枇杷', '樱桃', '杨梅'],
-      summer: ['西瓜', '桃子', '葡萄', '荔枝'],
-      autumn: ['苹果', '梨', '柿子', '柚子'],
-      winter: ['橙子', '柑橘', '猕猴桃', '火龙果']
+    'guangdong': {
+      'vegetables': {
+        '春季': '南方春季蔬菜生长良好，广东地区蔬菜供应充足，价格相对稳定',
+        '夏季': '夏季高温多雨，广东地区部分叶菜类受影响，价格波动较大',
+        '秋季': '秋季广东地区蔬菜供应充足，价格处于适中水平',
+        '冬季': '冬季广东气候温和，蔬菜供应依然充足，价格波动不大'
+      },
+      'fruits': {
+        '春季': '春季广东本地水果上市，品种多样，价格相对稳定',
+        '夏季': '夏季是岭南水果盛产期，荔枝、龙眼等水果大量上市，价格较低',
+        '秋季': '秋季水果种类依然丰富，价格保持稳定',
+        '冬季': '冬季广东柑橘类水果上市，价格适中'
+      }
     }
   };
   
-  // 根据月份确定季节
-  let season;
-  if (month >= 3 && month <= 5) season = 'spring';
-  else if (month >= 6 && month <= 8) season = 'summer';
-  else if (month >= 9 && month <= 11) season = 'autumn';
-  else season = 'winter';
-  
-  // 获取当季和非当季产品
-  const seasonalProducts = seasonalData[category] ? seasonalData[category][season] : [];
-  
-  // 生成季节性分析文本
-  let analysis = '';
-  if (seasonalProducts.length > 0) {
-    if (category === 'vegetables') {
-      analysis = `当前季节(${getSeasonName(season)})适合种植和收获的蔬菜有${seasonalProducts.join('、')}等，价格相对较低。非季节性蔬菜价格可能偏高。`;
-    } else if (category === 'fruits') {
-      analysis = `当前季节(${getSeasonName(season)})盛产的水果有${seasonalProducts.join('、')}等，新鲜度高且价格相对合理。`;
-    } else {
-      analysis = `当前季节(${getSeasonName(season)})市场供应充足，价格总体稳定。`;
+  // 默认季节性分析
+  const defaultAnalysis = {
+    'vegetables': {
+      '春季': '春季蔬菜供应逐渐增加，价格趋于稳定，但北方地区早春仍有价格波动',
+      '夏季': '夏季蔬菜供应充足，价格普遍较低，但高温多雨地区可能出现短期涨价',
+      '秋季': '秋季是蔬菜丰收季，全国各地价格处于全年低位',
+      '冬季': '冬季北方蔬菜价格上涨明显，南方地区波动较小'
+    },
+    'fruits': {
+      '春季': '春季水果种类相对较少，以苹果、梨等耐储存水果为主，价格适中',
+      '夏季': '夏季水果种类增多，价格开始下降，南方水果率先上市',
+      '秋季': '秋季水果品种丰富，价格处于较低水平',
+      '冬季': '冬季水果供应减少，以进口和储存水果为主，价格有所上升'
+    },
+    'grains': {
+      '春季': '春季粮食价格相对稳定，受上年度库存和新季播种影响',
+      '夏季': '夏季小麦等夏粮上市，价格略有下降',
+      '秋季': '秋季是粮食收获季节，价格处于全年低点',
+      '冬季': '冬季粮食交易减少，价格小幅回升'
+    },
+    'meat': {
+      '春季': '春季肉类消费稳定，价格变化不大',
+      '夏季': '夏季高温影响肉类消费，价格可能略有下降',
+      '秋季': '秋季肉类消费开始增加，价格略有上升',
+      '冬季': '冬季是肉类消费高峰，尤其节假日期间价格上涨明显'
+    },
+    'eggs': {
+      '春季': '春季蛋鸡产蛋率提高，价格趋于稳定',
+      '夏季': '夏季高温影响蛋鸡产蛋，价格可能有所上升',
+      '秋季': '秋季气温适宜，蛋类供应充足，价格相对稳定',
+      '冬季': '冬季节假日蛋类需求增加，价格有所上涨'
+    },
+    'aquatic': {
+      '春季': '春季水产品开始增多，价格略有下降',
+      '夏季': '夏季是水产品丰收季节，价格处于全年低位',
+      '秋季': '秋季水产品供应依然充足，价格保持低位',
+      '冬季': '冬季水产品减少，价格明显上升，北方地区尤为明显'
     }
-  } else {
-    analysis = `当前季节(${getSeasonName(season)})市场供应正常，价格随供需变化。`;
+  };
+  
+  // 查找省份特定分析，如果没有则使用默认分析
+  const provinceAnalysis = provincialAnalysis[province];
+  if (provinceAnalysis && provinceAnalysis[category]) {
+    return {
+      season,
+      analysis: provinceAnalysis[category][season] || defaultAnalysis[category][season]
+    };
   }
   
+  // 使用默认分析
   return {
-    season: getSeasonName(season),
-    seasonalProducts,
-    analysis
+    season,
+    analysis: defaultAnalysis[category] ? defaultAnalysis[category][season] : 
+      '当前季节市场供需基本平衡，价格波动不大。'
   };
 }
 
@@ -369,8 +507,10 @@ function getSeasonName(season) {
   return seasonMap[season] || '当前季节';
 }
 
+// 导出新增的省份数据
 export {
   getMarketPriceData,
   getPriceTrendAnalysis,
-  productCategories
+  productCategories,
+  provinces
 };
