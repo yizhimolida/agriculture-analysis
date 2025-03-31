@@ -94,7 +94,7 @@ function SupplyDemandConnection() {
   
   // 渲染不同类别的内容
   const renderContent = () => {
-    if (!data || data.length === 0) {
+    if (!data || !Array.isArray(data) || data.length === 0) {
       return (
         <div className="text-center py-10 text-gray-500">
           无数据可显示
@@ -146,7 +146,7 @@ function SupplyDemandConnection() {
                   <div className="mb-4">
                     <h5 className="text-sm font-medium text-gray-600 mb-2">相关方</h5>
                     <div className="flex flex-wrap gap-2">
-                      {item.stakeholders.map((stakeholder, i) => (
+                      {item.stakeholders && item.stakeholders.map((stakeholder, i) => (
                         <span key={i} className="bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs">
                           {stakeholder}
                         </span>
@@ -204,7 +204,7 @@ function SupplyDemandConnection() {
                   <div className="mb-4">
                     <h4 className="text-sm font-medium text-gray-700 mb-2">主要收益</h4>
                     <div className="flex flex-wrap gap-2">
-                      {solution.benefits.map((benefit, i) => (
+                      {solution.benefits && solution.benefits.map((benefit, i) => (
                         <span key={i} className="bg-green-50 text-green-700 px-3 py-1 rounded-full text-sm">
                           {benefit}
                         </span>
@@ -234,7 +234,7 @@ function SupplyDemandConnection() {
                     <div className="bg-gray-50 p-3 rounded-lg">
                       <h4 className="text-sm font-medium text-gray-700 mb-2">主要参与方</h4>
                       <div className="flex flex-wrap gap-2">
-                        {solution.implementation.keyPlayers.map((player, i) => (
+                        {solution.implementation && solution.implementation.keyPlayers && solution.implementation.keyPlayers.map((player, i) => (
                           <span key={i} className="bg-gray-200 text-gray-800 px-2 py-1 rounded text-xs">
                             {player}
                           </span>
@@ -293,7 +293,7 @@ function SupplyDemandConnection() {
                   <div className="mb-4">
                     <h4 className="text-sm font-medium text-gray-700 mb-2">成果与效益</h4>
                     <ul className="space-y-1 text-sm">
-                      {caseItem.results.map((result, i) => (
+                      {caseItem.results && caseItem.results.map((result, i) => (
                         <li key={i} className="flex items-start">
                           <svg className="h-5 w-5 text-green-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -308,7 +308,7 @@ function SupplyDemandConnection() {
                     <div>
                       <h4 className="text-sm font-medium text-gray-700 mb-2">成功关键因素</h4>
                       <ul className="space-y-1 text-sm">
-                        {caseItem.keyFactors.map((factor, i) => (
+                        {caseItem.keyFactors && caseItem.keyFactors.map((factor, i) => (
                           <li key={i} className="flex items-center">
                             <span className="text-blue-500 mr-2">•</span>
                             <span>{factor}</span>
@@ -318,7 +318,13 @@ function SupplyDemandConnection() {
                     </div>
                     <div>
                       <h4 className="text-sm font-medium text-gray-700 mb-2">实施情况</h4>
-                      <p className="text-sm text-gray-700">{caseItem.implementation}</p>
+                      <p className="text-sm text-gray-700">
+                        {typeof caseItem.implementation === 'object' 
+                          ? (caseItem.implementation.difficulty 
+                              ? `难度: ${caseItem.implementation.difficulty}, 时间: ${caseItem.implementation.timeframe || '未知'}, 成本: ${caseItem.implementation.cost || '未知'}` 
+                              : JSON.stringify(caseItem.implementation))
+                          : caseItem.implementation}
+                      </p>
                       <div className="mt-2">
                         <span className="text-sm text-gray-600">可复制性: </span>
                         <span className="text-sm font-medium">{caseItem.replicability}</span>
@@ -365,7 +371,7 @@ function SupplyDemandConnection() {
                     <div>
                       <h4 className="text-sm font-medium text-gray-700 mb-2">主要内容</h4>
                       <ul className="space-y-2 text-sm">
-                        {policy.keyPoints.map((point, i) => (
+                        {policy.keyPoints && policy.keyPoints.map((point, i) => (
                           <li key={i} className="flex items-start">
                             <span className="inline-flex items-center justify-center h-5 w-5 rounded-full bg-indigo-100 text-indigo-800 font-medium mr-2">
                               {i+1}
@@ -379,7 +385,7 @@ function SupplyDemandConnection() {
                     <div>
                       <h4 className="text-sm font-medium text-gray-700 mb-2">支持措施</h4>
                       <div className="flex flex-wrap gap-2">
-                        {policy.supportMeasures.map((measure, i) => (
+                        {policy.supportMeasures && policy.supportMeasures.map((measure, i) => (
                           <span key={i} className="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full text-sm">
                             {measure}
                           </span>
@@ -391,7 +397,9 @@ function SupplyDemandConnection() {
                   <div className="border-t border-gray-100 pt-3 flex justify-between text-sm">
                     <div className="text-gray-700">
                       <span className="text-gray-500">实施进度: </span>
-                      {policy.implementation}
+                      {typeof policy.implementation === 'object' 
+                        ? (policy.implementation.status || JSON.stringify(policy.implementation)) 
+                        : policy.implementation}
                     </div>
                     <a href={policy.referenceUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800">
                       查看详情 →
@@ -426,7 +434,7 @@ function SupplyDemandConnection() {
                   <div className="mb-4">
                     <h4 className="text-sm font-medium text-gray-700 mb-2">影响因素</h4>
                     <ul className="space-y-1 text-sm">
-                      {forecast.factors.map((factor, i) => (
+                      {forecast.factors && forecast.factors.map((factor, i) => (
                         <li key={i} className="flex items-center">
                           <span className="text-yellow-500 mr-2">•</span>
                           <span className="text-gray-700">{factor}</span>
@@ -438,7 +446,7 @@ function SupplyDemandConnection() {
                   <div className="mb-4">
                     <h4 className="text-sm font-medium text-gray-700 mb-2">价格变动预测</h4>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                      {Object.entries(forecast.priceChange).map(([key, value]) => (
+                      {forecast.priceChange && Object.entries(forecast.priceChange).map(([key, value]) => (
                         <div key={key} className="bg-gray-50 p-2 rounded-lg text-center">
                           <div className="text-xs text-gray-500 mb-1">
                             {key === 'leafy' ? '叶菜类' : 
@@ -463,7 +471,7 @@ function SupplyDemandConnection() {
                   <div className="mb-4">
                     <h4 className="text-sm font-medium text-gray-700 mb-2">潜在风险因素</h4>
                     <div className="flex flex-wrap gap-2">
-                      {forecast.riskFactors.map((risk, i) => (
+                      {forecast.riskFactors && forecast.riskFactors.map((risk, i) => (
                         <span key={i} className="bg-red-50 text-red-700 px-3 py-1 rounded-full text-sm">
                           {risk}
                         </span>
@@ -501,7 +509,7 @@ function SupplyDemandConnection() {
             onChange={handleCategoryChange}
             className="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            {supplyDemandCategories.map(category => (
+            {supplyDemandCategories && supplyDemandCategories.map(category => (
               <option key={category.id} value={category.id}>
                 {category.name}
               </option>
@@ -514,7 +522,7 @@ function SupplyDemandConnection() {
             className="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="all">全部行业</option>
-            {industryCategories.map(industry => (
+            {industryCategories && industryCategories.map(industry => (
               <option key={industry.id} value={industry.id}>
                 {industry.name}
               </option>
@@ -577,7 +585,7 @@ function SupplyDemandConnection() {
                     产销对接关键洞察
                   </h3>
                   <ul className="space-y-2">
-                    {summaryData.keyInsights.map((insight, index) => (
+                    {summaryData.keyInsights && summaryData.keyInsights.map((insight, index) => (
                       <li key={index} className="flex items-start">
                         <svg className="h-5 w-5 text-green-500 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -599,7 +607,7 @@ function SupplyDemandConnection() {
                     <div className="mt-3">
                       <h4 className="text-sm font-medium text-blue-700 mb-2">重点内容</h4>
                       <ul className="space-y-1">
-                        {summaryData.policy.key_points.map((point, idx) => (
+                        {summaryData.policy.key_points && summaryData.policy.key_points.map((point, idx) => (
                           <li key={idx} className="text-sm flex items-start">
                             <span className="text-blue-500 mr-2">•</span>
                             <span>{point}</span>

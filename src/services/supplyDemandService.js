@@ -347,7 +347,7 @@ function generateSupplyDemandData(category, industry) {
             keyPlayers: ["国家发改委", "农业农村部", "各级价格监测部门"]
           },
           effectiveness: 78,
-          caseReference: "湖北省"菜篮子"价格监测预警系统",
+          caseReference: '湖北省"菜篮子"价格监测预警系统',
           status: "试点推进中"
         },
         {
@@ -407,14 +407,14 @@ function generateSupplyDemandData(category, industry) {
             keyPlayers: ["保险公司", "财政部门", "农业部门"]
           },
           effectiveness: 75,
-          caseReference: "安徽省"保险+期货"试点项目",
+          caseReference: '安徽省"保险+期货"试点项目',
           status: "试点扩大中"
         },
         {
           id: 6,
           title: "产销一体化经营",
           approach: "模式创新",
-          description: "鼓励农业企业、合作社等主体实行"生产+加工+销售"一体化经营，降低流通成本",
+          description: '鼓励农业企业、合作社等主体实行"生产+加工+销售"一体化经营，降低流通成本',
           benefits: [
             "减少流通环节",
             "提高产品附加值",
@@ -457,7 +457,7 @@ function generateSupplyDemandData(category, industry) {
         },
         {
           id: 2,
-          title: "永辉超市"源头直采"模式",
+          title: '永辉超市"源头直采"模式',
           location: "全国多地",
           category: "多品类农产品",
           problem: "农产品流通环节多、成本高，农民与市场脱节",
@@ -478,7 +478,7 @@ function generateSupplyDemandData(category, industry) {
         },
         {
           id: 3,
-          title: "浙江"农批对接"平台",
+          title: '浙江"农批对接"平台',
           location: "浙江省",
           category: "果蔬产品",
           problem: "小农户与大市场衔接不畅，供需信息不对称",
@@ -499,7 +499,7 @@ function generateSupplyDemandData(category, industry) {
         },
         {
           id: 4,
-          title: "甘肃马铃薯"保险+期货"模式",
+          title: '甘肃马铃薯"保险+期货"模式',
           location: "甘肃省定西市",
           category: "马铃薯",
           problem: "产量波动大，价格风险高，农民收入不稳定",
